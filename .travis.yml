@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+  - "11"
+deploy:
+  provider: script
+  script: npm run publish
+  on:
+    branch: master
