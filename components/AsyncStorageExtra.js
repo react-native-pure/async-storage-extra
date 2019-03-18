@@ -5,7 +5,7 @@ import {EventEmitter} from "fbemitter"
  * AsyncStorage扩展
  */
 export default class AsyncStorageExtra {
-    constructor(prefix: String = "ibuild") {
+    constructor(prefix: String = "@storage") {
         this._prefix = prefix
         this._emitter = new EventEmitter();
     }
