@@ -1,0 +1,39 @@
+{
+  "name": "@react-native-pure/async-storage-extra",
+  "version": "0.0.1",
+  "description": "AsyncStorage扩展",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cm": "git-cz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-native-pure/async-storage-extra.git"
+  },
+  "keywords": [
+    "async-storage"
+  ],
+  "author": "m860",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/react-native-pure/async-storage-extra/issues"
+  },
+  "homepage": "https://github.com/react-native-pure/async-storage-extra#readme",
+  "dependencies": {
+    "fbemitter": "^2.1.1"
+  },
+  "devDependencies": {
+    "commitizen": "^3.0.7",
+    "cz-conventional-changelog": "^2.1.0",
+    "react-native": "^0.59.1"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.50"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
