@@ -4,5 +4,6 @@ node_js:
 deploy:
   provider: script
   script: npm run publish
+  skip-cleanup: true
   on:
     branch: master
