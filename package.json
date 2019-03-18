@@ -4,7 +4,7 @@
   "description": "AsyncStorage扩展",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "cm": "git-cz",
     "publish": "semantic-release"
   },
@@ -25,8 +25,13 @@
     "fbemitter": "^2.1.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/preset-flow": "^7.0.0",
+    "babel-jest": "^24.5.0",
     "commitizen": "^3.0.7",
     "cz-conventional-changelog": "^2.1.0",
+    "jest": "^24.5.0",
     "react-native": "^0.59.1",
     "semantic-release": "^15.13.3"
   },
