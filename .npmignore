@@ -5,3 +5,4 @@ jest.config.js
 package-lock.json
 coverage
 .releaserc
+__test__
