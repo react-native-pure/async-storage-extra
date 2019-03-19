@@ -41,16 +41,21 @@ export default class AsyncStorageExtra implements IStorage {
         return this._storage.getItem(realKey);
     }
 
+    /**
+     * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
+     */
     setItem(key, value, option: ValueItemOptionType = {preload: true}) {
         this._emitter.emit(key, value);
-        this._asyncStorage.setItem(key, value, option);
-        this._storage.setItem(key, value, option);
+        const realKey = this._getRealKey(key);
+        this._asyncStorage.setItem(realKey, value, option);
+        this._storage.setItem(realKey, value, option);
     }
 
     removeItem(key: String) {
         this._emitter.emit(key);
-        this._storage.removeItem(key);
-        this._asyncStorage.removeItem(key);
+        const realKey = this._getRealKey(key);
+        this._storage.removeItem(realKey);
+        this._asyncStorage.removeItem(realKey);
     }
 
     clear() {
@@ -78,6 +83,9 @@ export default class AsyncStorageExtra implements IStorage {
         this._asyncStorage.multiRemove(keys);
     }
 
+    /**
+     * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
+     */
     multiSet(keyValuePairs) {
         keyValuePairs.forEach(([key, value]) => this._emitter.emit(key, value));
         this._storage.multiSet(keyValuePairs);
@@ -91,7 +99,8 @@ export default class AsyncStorageExtra implements IStorage {
 
     search(pattern) {
         const keys = this.getKeys(pattern);
-        return this._storage.multiGet(keys);
+        const result = this._storage.multiGet(keys.map(key => this._getRealKey(key)));
+        return result.map(([key, value]) => [this._getKey(key), value]);
     }
 
     addListener(key, callback) {
