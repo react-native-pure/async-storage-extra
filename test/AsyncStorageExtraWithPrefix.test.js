@@ -3,11 +3,13 @@ import "../__tests__/AsyncStorage.mock"
 import AsyncStorageExtra from "../index"
 
 describe(`test Storage`, () => {
-    const storage = new AsyncStorageExtra("@hello");
+    const prefix = "@hello"
+    const storage = new AsyncStorageExtra(prefix);
     test(`setItem/getItem a number`, async () => {
         const key = "test_number";
         const value = 123
         await storage.setItem(key, value);
+        expect(storage._storage._values.hasOwnProperty(`${prefix}${key}`)).toBe(true);
         const result = await storage.getItem(key);
         expect(result).toBe(value);
         expect(typeof result).toBe("number")
@@ -113,6 +115,7 @@ describe(`test Storage`, () => {
             ["key2", 2],
             ["key3", 3]
         ]);
+        expect(storage._storage._values.hasOwnProperty(`${prefix}key1`)).toBe(true);
         const keyValuePairs = storage.multiGet(["key1", "key2", "key3"]);
         expect(keyValuePairs.length).toBe(3);
         expect(keyValuePairs[0][0]).toBe("key1");

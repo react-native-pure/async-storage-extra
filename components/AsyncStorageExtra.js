@@ -41,6 +41,18 @@ export default class AsyncStorageExtra implements IStorage {
         return this._storage.getItem(realKey);
     }
 
+    multiGet(keys: Array) {
+        const realKeys = keys.map(key => this._getRealKey(key));
+        const result = this._storage.multiGet(realKeys);
+        return result.map(([key, value]) => [this._getKey(key), value]);
+    }
+
+    search(pattern) {
+        const keys = this.getKeys(pattern);
+        const result = this._storage.multiGet(keys.map(key => this._getRealKey(key)));
+        return result.map(([key, value]) => [this._getKey(key), value]);
+    }
+
     /**
      * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
      */
@@ -51,11 +63,27 @@ export default class AsyncStorageExtra implements IStorage {
         this._storage.setItem(realKey, value, option);
     }
 
+    /**
+     * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
+     */
+    multiSet(keyValuePairs) {
+        keyValuePairs.forEach(([key, value]) => this._emitter.emit(key, value));
+        const next = keyValuePairs.map(([key, value]) => [this._getRealKey(key), value]);
+        this._storage.multiSet(next);
+        this._asyncStorage.multiSet(next);
+    }
+
     removeItem(key: String) {
         this._emitter.emit(key);
         const realKey = this._getRealKey(key);
         this._storage.removeItem(realKey);
         this._asyncStorage.removeItem(realKey);
+    }
+
+    multiRemove(keys: Array) {
+        keys.forEach(key => this._emitter.emit(key));
+        this._storage.multiRemove(keys);
+        this._asyncStorage.multiRemove(keys);
     }
 
     clear() {
@@ -75,32 +103,6 @@ export default class AsyncStorageExtra implements IStorage {
             return allKeys.filter(key => pattern.test(key));
         }
         return allKeys;
-    }
-
-    multiRemove(keys: Array) {
-        keys.forEach(key => this._emitter.emit(key));
-        this._storage.multiRemove(keys);
-        this._asyncStorage.multiRemove(keys);
-    }
-
-    /**
-     * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
-     */
-    multiSet(keyValuePairs) {
-        keyValuePairs.forEach(([key, value]) => this._emitter.emit(key, value));
-        this._storage.multiSet(keyValuePairs);
-        this._asyncStorage.multiSet(keyValuePairs);
-    }
-
-    multiGet(keys: Array) {
-        return this._storage.multiGet(keys);
-    }
-
-
-    search(pattern) {
-        const keys = this.getKeys(pattern);
-        const result = this._storage.multiGet(keys.map(key => this._getRealKey(key)));
-        return result.map(([key, value]) => [this._getKey(key), value]);
     }
 
     addListener(key, callback) {
