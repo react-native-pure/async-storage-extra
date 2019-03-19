@@ -33,11 +33,7 @@ export default class AsyncStorageExtra implements IStorage {
 
     _getKey(realKey: String): String {
         const len = this._option.prefix.length;
-        return realKey.substring(len + 1);
-    }
-
-    _isValidKey(key: String): Boolean {
-        return new RegExp(`^${this._prefix}-`).test(key);
+        return realKey.substring(len);
     }
 
     getItem(key) {
@@ -57,14 +53,14 @@ export default class AsyncStorageExtra implements IStorage {
         this._asyncStorage.removeItem(key);
     }
 
-    clear(): Promise {
+    clear() {
         const allKeys = this._storage.getAllKeys().map(key => this._getKey(key));
         allKeys.forEach(key => this._emitter.emit(key));
         this._storage.clear();
         this._asyncStorage.clear();
     }
 
-    getAllKeys(): Promise {
+    getAllKeys() {
         return this._storage.getAllKeys().map(key => this._getKey(key));
     }
 
@@ -93,8 +89,9 @@ export default class AsyncStorageExtra implements IStorage {
     }
 
 
-    async search(pattern): Promise {
-        return this._storage.search(pattern);
+    search(pattern) {
+        const keys = this.getKeys(pattern);
+        return this._storage.multiGet(keys);
     }
 
     addListener(key, callback) {
