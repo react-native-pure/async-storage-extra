@@ -55,7 +55,7 @@ export default function (...args: Array<ConnectItemType>): React.Component {
             render() {
                 const {forwardedRef, ...rest} = this.props;
                 return <WrapperComponent {...rest}
-                                         {...this.state.props}
+                                         {...this.state.nextProps}
                                          ref={forwardedRef}></WrapperComponent>
             }
 
