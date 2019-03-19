@@ -1,5 +1,5 @@
 import {AsyncStorage} from "react-native"
-import type {IStorage, ValueItemOptionType, ValueItemType} from "./Types";
+import type {IStorage, ValueItemType} from "./Types";
 
 export default class EnhancedAsyncStorage implements IStorage {
 
@@ -32,11 +32,10 @@ export default class EnhancedAsyncStorage implements IStorage {
      * @returns {string}
      * @private
      */
-    _save(value: any, option?: ValueItemOptionType): string {
+    _save(value: any): string {
         const item: ValueItemType = {
             type: typeof value,
-            value: JSON.stringify(value),
-            option: option
+            value: JSON.stringify(value)
         };
         return JSON.stringify(item);
     }
@@ -46,8 +45,8 @@ export default class EnhancedAsyncStorage implements IStorage {
         return this._restore(value);
     }
 
-    setItem(key, value, option?: ValueItemOptionType) {
-        return AsyncStorage.setItem(key, this._save(value, option));
+    setItem(key, value) {
+        return AsyncStorage.setItem(key, this._save(value));
     }
 
     removeItem(key) {

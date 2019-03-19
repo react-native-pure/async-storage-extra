@@ -24,11 +24,7 @@ export type ValueItemType = {
     /**
      * 值
      */
-    value: string,
-    /**
-     * 值的配置项
-     */
-    option?: ValueItemOptionType
+    value: string
 };
 
 export interface IStorage {

@@ -1,6 +1,5 @@
-import {AsyncStorage} from "react-native"
 import {EventEmitter} from "fbemitter"
-import type {IStorage, StorageOption, ValueItemOptionType} from "./Types";
+import type {IStorage, StorageOption} from "./Types";
 import Storage from "./Storage";
 import EnhancedAsyncStorage from "./EnhancedAsyncStorage";
 
@@ -56,11 +55,11 @@ export default class AsyncStorageExtra implements IStorage {
     /**
      * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
      */
-    setItem(key, value, option: ValueItemOptionType = {preload: true}) {
+    setItem(key, value) {
         this._emitter.emit(key, value);
         const realKey = this._getRealKey(key);
-        this._asyncStorage.setItem(realKey, value, option);
-        this._storage.setItem(realKey, value, option);
+        this._asyncStorage.setItem(realKey, value);
+        this._storage.setItem(realKey, value);
     }
 
     /**
