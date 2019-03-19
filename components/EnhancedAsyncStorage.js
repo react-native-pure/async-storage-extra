@@ -16,7 +16,7 @@ export default class EnhancedAsyncStorage implements IStorage {
                 case "date":
                     return new Date(JSON.parse(item.value));
                 case "number":
-                    return new Number(item.value);
+                    return parseFloat(item.value);// new Number(item.value);
                 case "string":
                     return item.value;
                 default:

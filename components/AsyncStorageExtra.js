@@ -4,7 +4,7 @@ import Storage from "./Storage";
 import EnhancedAsyncStorage from "./EnhancedAsyncStorage";
 
 const DefaultStorageOption: StorageOption = {
-    prefix: "",
+    prefix: "@storage",
     preload: true
 };
 
@@ -22,7 +22,10 @@ export default class AsyncStorageExtra implements IStorage {
             this._option = Object.assign({}, DefaultStorageOption, {prefix: option});
         }
         else {
-            this._option = option;
+            this._option = Object.assign({}, DefaultStorageOption, option);
+        }
+        if (this._option.preload) {
+            this.restore();
         }
     }
 
@@ -138,5 +141,12 @@ export default class AsyncStorageExtra implements IStorage {
             keys,
             mapStateToProps
         };
+    }
+
+    async restore() {
+        const allKeys = await this._asyncStorage.getAllKeys();
+        const keyValuePairs = await this._asyncStorage.multiGet(allKeys);
+        this._storage.multiSet(keyValuePairs);
+        this._option.onPreload && this._option.onPreload(this);
     }
 }

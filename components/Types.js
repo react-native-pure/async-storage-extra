@@ -1,3 +1,5 @@
+import AsyncStorageExtra from "./AsyncStorageExtra";
+
 export type StorageOption = {
     /**
      * key前缀
@@ -6,7 +8,11 @@ export type StorageOption = {
     /**
      * 是否预加载到内存中
      */
-    preload?: boolean
+    preload?: boolean,
+    /**
+     * 数据加载好之后的回调
+     */
+    onPreload?: (self: AsyncStorageExtra) => void
 };
 
 export type ValueItemOptionType = {

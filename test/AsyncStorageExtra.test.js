@@ -4,6 +4,19 @@ import AsyncStorageExtra from "../index"
 
 describe(`test Storage`, () => {
     const storage = new AsyncStorageExtra();
+    test(`restore`, (callback) => {
+        new AsyncStorageExtra({
+            onPreload: (self) => {
+                const oldNumber = self.getItem("old_number");
+                const oldString = self.getItem("old_string");
+                const oldDate = self.getItem("old_date");
+                expect(oldNumber).toBe(1);
+                expect(oldString).toBe("hello");
+                expect(oldDate.getFullYear()).toBe(2010);
+                callback();
+            }
+        });
+    });
     test(`setItem/getItem a number`, async () => {
         const key = "test_number";
         const value = 123
@@ -124,11 +137,17 @@ describe(`test Storage`, () => {
         const key2Callback = jest.fn();
         storage.once("key2", key2Callback);
         storage.setItem("key1", 1);
+        storage.removeItem("key1");
         storage.setItem("key2", 2);
-        expect(key1Callback.mock.calls.length).toBe(1);
+        storage.removeItem("key2");
+        storage.multiSet([
+            ["key1", 1],
+            ["key2", 2]
+        ]);
+        expect(key1Callback.mock.calls.length).toBe(3);
         expect(key2Callback.mock.calls.length).toBe(1);
         storage.removeAllListeners("key1");
         storage.setItem("key1", 3);
-        expect(key1Callback.mock.calls.length).toBe(1);
+        expect(key1Callback.mock.calls.length).toBe(3);
     });
 })
