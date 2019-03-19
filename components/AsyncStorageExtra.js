@@ -1,5 +1,5 @@
 import {EventEmitter} from "fbemitter"
-import type {IStorage, StorageOption} from "./Types";
+import type {ConnectItemType, IStorage, StorageOption} from "./Types";
 import Storage from "./Storage";
 import EnhancedAsyncStorage from "./EnhancedAsyncStorage";
 
@@ -135,7 +135,7 @@ export default class AsyncStorageExtra implements IStorage {
      * @param mapStateToProps
      * @returns {{scope: Storage, keys: *, mapStateToProps: *}}
      */
-    connect(keys, mapStateToProps) {
+    connect(keys, mapStateToProps): ConnectItemType {
         return {
             scope: this,
             keys,

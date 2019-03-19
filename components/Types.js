@@ -52,3 +52,9 @@ export interface IStorage {
 
     search(pattern: RegExp): Array
 }
+
+export type ConnectItemType = {
+    scope: AsyncStorageExtra,
+    keys: Array<string>,
+    mapStateToProps: (values: Array<mixed>) => Object
+};
