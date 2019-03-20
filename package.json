@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/react-native-pure/async-storage-extra#readme",
   "dependencies": {
+    "fast-deep-equal": "^2.0.1",
     "fbemitter": "^2.1.1",
     "hoist-non-react-statics": "^3.3.0"
   },
@@ -36,8 +37,9 @@
     "coveralls": "^3.0.3",
     "cz-conventional-changelog": "^2.1.0",
     "jest": "^24.5.0",
-    "react": "^16.8.4",
-    "react-native": "^0.59.1",
+    "jest-haste-map": "^24.5.0",
+    "react": "16.8.3",
+    "react-native": "0.59.1",
     "react-test-renderer": "^16.8.4",
     "semantic-release": "^15.13.3"
   },

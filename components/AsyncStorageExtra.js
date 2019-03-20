@@ -2,6 +2,7 @@ import {EventEmitter} from "fbemitter"
 import type {ConnectItemType, IStorage, StorageOption} from "./Types";
 import Storage from "./Storage";
 import EnhancedAsyncStorage from "./EnhancedAsyncStorage";
+import equal from "fast-deep-equal"
 
 const DefaultStorageOption: StorageOption = {
     prefix: "@storage",
@@ -55,24 +56,32 @@ export default class AsyncStorageExtra implements IStorage {
         return result.map(([key, value]) => [this._getKey(key), value]);
     }
 
-    /**
-     * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
-     */
     setItem(key, value) {
-        this._emitter.emit(key, value);
-        const realKey = this._getRealKey(key);
-        this._asyncStorage.setItem(realKey, value);
-        this._storage.setItem(realKey, value);
+        const old = this.getItem(key);
+        if (!equal(old, value)) {
+            this._emitter.emit(key, value);
+            const realKey = this._getRealKey(key);
+            this._asyncStorage.setItem(realKey, value);
+            this._storage.setItem(realKey, value);
+        }
     }
 
-    /**
-     * @TODO 如果set的值和原值相等(deep equal),则不执行任何操作
-     */
     multiSet(keyValuePairs) {
-        keyValuePairs.forEach(([key, value]) => this._emitter.emit(key, value));
-        const next = keyValuePairs.map(([key, value]) => [this._getRealKey(key), value]);
-        this._storage.multiSet(next);
-        this._asyncStorage.multiSet(next);
+        const keys = keyValuePairs.map(([key, value]) => key);
+        const olds = this.multiGet(keys);
+        const nextKeyValuePairs = keyValuePairs.filter(([key, value]) => {
+            const oldKeyValue = olds.find(([oKey, oValue]) => oKey === key);
+            if (oldKeyValue) {
+                return equal(value, oldKeyValue[1]) ? false : true
+            }
+            return true;
+        });
+        if (nextKeyValuePairs.length > 0) {
+            nextKeyValuePairs.forEach(([key, value]) => this._emitter.emit(key, value));
+            const next = nextKeyValuePairs.map(([key, value]) => [this._getRealKey(key), value]);
+            this._storage.multiSet(next);
+            this._asyncStorage.multiSet(next);
+        }
     }
 
     removeItem(key: String) {
@@ -113,9 +122,6 @@ export default class AsyncStorageExtra implements IStorage {
 
     /**
      * 监听key/value的变化,只执行一次
-     * @param key
-     * @param callback
-     * @returns {*}
      */
     once(key, callback) {
         return this._emitter.once(key, callback);
@@ -123,17 +129,13 @@ export default class AsyncStorageExtra implements IStorage {
 
     /**
      * 移除key/value的所有监听
-     * @param key
      */
     removeAllListeners(key) {
         return this._emitter.removeAllListeners(key);
     }
 
     /**
-     * storage的快捷设置
-     * @param keys
-     * @param mapStateToProps
-     * @returns {{scope: Storage, keys: *, mapStateToProps: *}}
+     * connect storage
      */
     connect(keys, mapStateToProps): ConnectItemType {
         return {

@@ -134,23 +134,59 @@ describe(`test Storage`, () => {
         expect(keyValuePairs[0][0]).toBe("key1");
         expect(keyValuePairs[0][1]).toBe(1);
     });
-    test(`listen`, () => {
-        const key1Callback = jest.fn();
-        storage.addListener("key1", key1Callback);
-        const key2Callback = jest.fn();
-        storage.once("key2", key2Callback);
-        storage.setItem("key1", 1);
-        storage.removeItem("key1");
-        storage.setItem("key2", 2);
-        storage.removeItem("key2");
+    test(`trigger listener`, () => {
+        const key = "trigger-listener";
+        const callback = jest.fn();
+        storage.addListener(key, callback);
+        storage.setItem(key, 1);
+        expect(callback.mock.calls.length).toBe(1);
         storage.multiSet([
-            ["key1", 1],
-            ["key2", 2]
+            [key, 2]
         ]);
-        expect(key1Callback.mock.calls.length).toBe(3);
-        expect(key2Callback.mock.calls.length).toBe(1);
-        storage.removeAllListeners("key1");
-        storage.setItem("key1", 3);
-        expect(key1Callback.mock.calls.length).toBe(3);
+        expect(callback.mock.calls.length).toBe(2);
+        storage.removeAllListeners(key);
+        storage.setItem(key, 3);
+        storage.multiSet([
+            [key, 4]
+        ]);
+        expect(callback.mock.calls.length).toBe(2);
+    });
+
+    test(`trigger listener once`, () => {
+        const key = "trigger-listener-once";
+        const callback = jest.fn();
+        storage.once(key, callback);
+        storage.setItem(key, 1);
+        expect(callback.mock.calls.length).toBe(1);
+        storage.setItem(key, 2);
+        expect(callback.mock.calls.length).toBe(1);
+        storage.multiSet([
+            [key, 3]
+        ]);
+        expect(callback.mock.calls.length).toBe(1);
+    });
+
+    test(`Don't trigger listener when set the same value`, () => {
+        const callback = jest.fn();
+        const key = "do-not-trigger";
+        storage.addListener(key, callback);
+        storage.setItem(key, 1);
+        expect(callback.mock.calls.length).toBe(1);
+        storage.setItem(key, 1);
+        expect(callback.mock.calls.length).toBe(1);
+        storage.multiSet([
+            [key, 1]
+        ]);
+        expect(callback.mock.calls.length).toBe(1);
+        storage.setItem(key, {name: "j", arr: [1, 2], ext: {a: "a"}});
+        expect(callback.mock.calls.length).toBe(2);
+        storage.setItem(key, {name: "j", arr: [1, 2], ext: {a: "a"}});
+        expect(callback.mock.calls.length).toBe(2);
+        storage.setItem(key, 1);
+        expect(callback.mock.calls.length).toBe(3);
+        storage.multiSet([
+            [key, 1]
+        ]);
+        expect(callback.mock.calls.length).toBe(3);
     });
 })
