@@ -143,10 +143,20 @@ export default class AsyncStorageExtra implements IStorage {
         };
     }
 
+    /**
+     * 将AsyncStorage中的数据恢复到内存中
+     */
     async restore() {
         const allKeys = await this._asyncStorage.getAllKeys();
         const keyValuePairs = await this._asyncStorage.multiGet(allKeys);
         this._storage.multiSet(keyValuePairs);
         this._option.onPreload && this._option.onPreload(this);
+    }
+
+    /**
+     * 释放掉内存中的数据
+     */
+    release() {
+        this._storage.clear();
     }
 }

@@ -4,7 +4,7 @@ import AsyncStorageExtra from "../index"
 
 describe(`test Storage`, () => {
     const storage = new AsyncStorageExtra();
-    test(`restore`, (callback) => {
+    test(`restore/release`, (callback) => {
         new AsyncStorageExtra({
             onPreload: (self) => {
                 const oldNumber = self.getItem("old_number");
@@ -13,6 +13,9 @@ describe(`test Storage`, () => {
                 expect(oldNumber).toBe(1);
                 expect(oldString).toBe("hello");
                 expect(oldDate.getFullYear()).toBe(2010);
+                self.release();
+                const allKeys = self.getAllKeys();
+                expect(allKeys.length).toBe(0);
                 callback();
             }
         });
