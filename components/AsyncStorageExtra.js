@@ -93,8 +93,9 @@ export default class AsyncStorageExtra implements IStorage {
 
     multiRemove(keys: Array) {
         keys.forEach(key => this._emitter.emit(key));
-        this._storage.multiRemove(keys);
-        this._asyncStorage.multiRemove(keys);
+        const realKeys = keys.map(key => this._getRealKey(key));
+        this._storage.multiRemove(realKeys);
+        this._asyncStorage.multiRemove(realKeys);
     }
 
     clear() {

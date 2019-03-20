@@ -189,5 +189,31 @@ describe(`test Storage`, () => {
         ]);
         expect(callback.mock.calls.length).toBe(3);
     });
-    //TODO test multiRemove
+    test("multiRemove", () => {
+        storage.setItem("a", "a");
+        storage.setItem("b", "b");
+        storage.multiRemove(["a", "b"]);
+        const result = storage.multiGet(["a", "b"]);
+        expect(result.length).toBe(2);
+        result.forEach(([key, value]) => {
+            expect(!!value).toBe(false);
+        })
+    });
+
+    test(`Trigger item change when multiRemove`, () => {
+        const S = new AsyncStorageExtra();
+        S.setItem("a", "a");
+        const callback = jest.fn();
+        S.addListener("a", callback);
+        S.multiRemove(["a"]);
+        expect(callback.mock.calls.length).toBe(1);
+    });
+
+    test("New Storage with prefix='@abc'", () => {
+        const prefix = "@abc";
+        const s1 = new AsyncStorageExtra(prefix);
+        expect(s1._option.prefix).toBe(prefix);
+        const s2 = new AsyncStorageExtra({prefix: prefix});
+        expect(s2._option.prefix).toBe(prefix);
+    })
 })
