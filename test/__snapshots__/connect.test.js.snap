@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test AsyncStorage connect The correct display name is  in <User/> 1`] = `
+<div>
+  <span>
+    Name : 
+    jean
+  </span>
+</div>
+`;
+
+exports[`test AsyncStorage connect The correct display name is  in <User/> 2`] = `
+<div>
+  <span>
+    Name : 
+    jean.h.ma
+  </span>
+</div>
+`;

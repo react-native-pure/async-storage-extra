@@ -1,207 +1,127 @@
-import {AsyncStorage} from "react-native"
 import {EventEmitter} from "fbemitter"
+import type {ConnectItemType, IStorage, StorageOption} from "./Types";
+import Storage from "./Storage";
+import EnhancedAsyncStorage from "./EnhancedAsyncStorage";
+import equal from "fast-deep-equal"
+
+const DefaultStorageOption: StorageOption = {
+    prefix: "@storage",
+    preload: true
+};
 
 /**
  * AsyncStorage扩展
  */
-export default class AsyncStorageExtra {
-    constructor(prefix: String = "@storage") {
-        this._prefix = prefix
-        this._emitter = new EventEmitter();
-    }
+export default class AsyncStorageExtra implements IStorage {
+    _option: StorageOption;
+    _emitter: EventEmitter = new EventEmitter();
+    _storage: Storage = new Storage();
+    _asyncStorage: EnhancedAsyncStorage = new EnhancedAsyncStorage();
 
-    /**
-     * 根据当前Storage的key值生成AsyncStorage真正对应的key
-     * @param key
-     * @returns {string}
-     * @private
-     */
-    _generateAsyncStorageKey(key: String): String {
-        return `${this._prefix}-${key}`;
-    }
-
-    /**
-     * 根据AsyncStorage的key值获取当前Storage的key
-     * @param asyncStorageKey
-     * @returns {string}
-     * @private
-     */
-    _getKey(asyncStorageKey: String): String {
-        const len = this._prefix.length;
-        return asyncStorageKey.substring(len + 1);
-    }
-
-    /**
-     * 测试key是否是当前Storage的key
-     * @param key
-     * @returns {boolean}
-     * @private
-     */
-    _isValidKey(key: String): Boolean {
-        return new RegExp(`^${this._prefix}-`).test(key);
-    }
-
-    /**
-     * 获取对应key的值
-     * @param key
-     * @returns {Promise<*>}
-     */
-    async getItem(key: String, defaultValue): Promise {
-        const realKey = this._generateAsyncStorageKey(key);
-        const str = await AsyncStorage.getItem(realKey);
-        // console.log(`AsyncStorage getItem key:${realKey},value=${str}`);
-        if (str) {
-            const {type, value} = JSON.parse(str);
-            if (type === "date") {
-                return new Date(JSON.parse(value));
-            }
-            else if (type === "number") {
-                return value === "NaN" ? NaN : JSON.parse(value);
-            }
-            else if (type === "string") {
-                return value;
-            }
-            else {
-                return JSON.parse(value);
-            }
-        }
-        return defaultValue;
-    }
-
-    /**
-     * 设置多个key/value值
-     * @param {Array<String>} keys
-     * @returns {Promise<T[]>}
-     */
-    async multiGet(keys: Array): Promise {
-        return Promise.all(keys.map(key => {
-            return this.getItem(key);
-        }))
-    }
-
-    /**
-     * 设置item
-     * @param key
-     * @param value
-     * @returns {*}
-     */
-    setItem(key: String, value: Object | Array | String | Number | Date): Promise {
-        this._emitter.emit(key, value);
-        let valueType = typeof value;
-        let valueStr = "";
-        if (value instanceof Date) {
-            valueType = "date";
-            valueStr = JSON.stringify(value);
-        }
-        else if (valueType === "object") {
-            valueStr = JSON.stringify(value);
+    constructor(option: StorageOption = DefaultStorageOption) {
+        if (typeof option === "string") {
+            this._option = Object.assign({}, DefaultStorageOption, {prefix: option});
         }
         else {
-            valueStr = value.toString();
+            this._option = Object.assign({}, DefaultStorageOption, option);
         }
-        const realKey = this._generateAsyncStorageKey(key);
-        const realValue = JSON.stringify({
-            type: valueType,
-            value: valueStr
-        })
-        // console.log(`AsyncStorage setItem key:${realKey},value:${realValue}`);
-        return AsyncStorage.setItem(realKey, realValue);
+        if (this._option.preload) {
+            this.restore();
+        }
     }
 
-    /**
-     * 设置多个item
-     * @param {Array} keyValuePairs
-     * @param {String} keyValuePairs[].key
-     * @param {any} keyValuePairs[].value
-     * @returns {Promise<*>}
-     */
-    multiSet(keyValuePairs): Promise {
-        return Promise.all(keyValuePairs.map(({key, value}) => {
-            return this.setItem(key, value);
-        }))
+    _getRealKey(key: String): String {
+        return `${this._option.prefix}${key}`;
     }
 
-    /**
-     * 移除key/value
-     * @param key
-     * @returns {*}
-     */
-    removeItem(key: String): Promise {
-        this._emitter.emit(key, null);
-        return AsyncStorage.removeItem(this._generateAsyncStorageKey(key));
+    _getKey(realKey: String): String {
+        const len = this._option.prefix.length;
+        return realKey.substring(len);
     }
 
-    /**
-     * 获取所有的key
-     * @param pattern
-     * @returns {Promise<*>}
-     */
-    async getAllKeys(pattern): Promise {
-        const allAsyncStorageKeys = await AsyncStorage.getAllKeys();
-        const asyncStorageKeys = allAsyncStorageKeys.filter(asyncStorageKey => this._isValidKey(asyncStorageKey));
-        const keys = asyncStorageKeys.map(asyncStorageKey => {
-            return this._getKey(asyncStorageKey);
+    getItem(key) {
+        const realKey = this._getRealKey(key);
+        return this._storage.getItem(realKey);
+    }
+
+    multiGet(keys: Array) {
+        const realKeys = keys.map(key => this._getRealKey(key));
+        const result = this._storage.multiGet(realKeys);
+        return result.map(([key, value]) => [this._getKey(key), value]);
+    }
+
+    search(pattern) {
+        const keys = this.getKeys(pattern);
+        const result = this._storage.multiGet(keys.map(key => this._getRealKey(key)));
+        return result.map(([key, value]) => [this._getKey(key), value]);
+    }
+
+    setItem(key, value) {
+        const old = this.getItem(key);
+        if (!equal(old, value)) {
+            this._emitter.emit(key, value);
+            const realKey = this._getRealKey(key);
+            this._asyncStorage.setItem(realKey, value);
+            this._storage.setItem(realKey, value);
+        }
+    }
+
+    multiSet(keyValuePairs) {
+        const keys = keyValuePairs.map(([key, value]) => key);
+        const olds = this.multiGet(keys);
+        const nextKeyValuePairs = keyValuePairs.filter(([key, value]) => {
+            const oldKeyValue = olds.find(([oKey, oValue]) => oKey === key);
+            if (oldKeyValue) {
+                return equal(value, oldKeyValue[1]) ? false : true
+            }
+            return true;
         });
+        if (nextKeyValuePairs.length > 0) {
+            nextKeyValuePairs.forEach(([key, value]) => this._emitter.emit(key, value));
+            const next = nextKeyValuePairs.map(([key, value]) => [this._getRealKey(key), value]);
+            this._storage.multiSet(next);
+            this._asyncStorage.multiSet(next);
+        }
+    }
+
+    removeItem(key: String) {
+        this._emitter.emit(key);
+        const realKey = this._getRealKey(key);
+        this._storage.removeItem(realKey);
+        this._asyncStorage.removeItem(realKey);
+    }
+
+    multiRemove(keys: Array) {
+        keys.forEach(key => this._emitter.emit(key));
+        this._storage.multiRemove(keys);
+        this._asyncStorage.multiRemove(keys);
+    }
+
+    clear() {
+        const allKeys = this._storage.getAllKeys().map(key => this._getKey(key));
+        allKeys.forEach(key => this._emitter.emit(key));
+        this._storage.clear();
+        this._asyncStorage.clear();
+    }
+
+    getAllKeys() {
+        return this._storage.getAllKeys().map(key => this._getKey(key));
+    }
+
+    getKeys(pattern: RegExp) {
+        const allKeys = this.getAllKeys();
         if (pattern) {
-            return keys.filter(f => pattern.test(f));
+            return allKeys.filter(key => pattern.test(key));
         }
-        return keys;
+        return allKeys;
     }
 
-    /**
-     * 清除所有的值
-     * @returns {Promise}
-     */
-    async clear(): Promise {
-        const allAsyncStorageKeys = await AsyncStorage.getAllKeys();
-        const asyncStorageKeys = allAsyncStorageKeys.filter(asyncStorageKey => this._isValidKey(asyncStorageKey));
-        const keys = asyncStorageKeys.map(asyncStorageKey => this._getKey(asyncStorageKey));
-        keys.forEach(key => this._emitter.emit(key, null));
-        if (asyncStorageKeys.length > 0) {
-            return AsyncStorage.multiRemove(asyncStorageKeys);
-        }
-        return Promise.resolve();
-    }
-
-    /**
-     * 移除多个key
-     * @param keys
-     * @returns {*}
-     */
-    multiRemove(keys: Array): Promise {
-        const realKeys = keys.map(key => {
-            this._emitter.emit(key, null);
-            return this._generateAsyncStorageKey(key);
-        });
-        return AsyncStorage.multiRemove(realKeys);
-    }
-
-    /**
-     * 模糊查找,只要key值包含str就会返回对应的值
-     * @returns {Promise}
-     * @param pattern
-     */
-    async search(pattern): Promise {
-        const keys = await this.getAllKeys();
-        const targetKeys = keys.filter(key => pattern.test(key));
-        return this.multiGet(targetKeys);
-    }
-
-    /**
-     * 监听key/value的变化
-     * @param key
-     * @param callback
-     * @returns {*}
-     */
     addListener(key, callback) {
         return this._emitter.addListener(key, callback);
     }
 
     /**
      * 监听key/value的变化,只执行一次
-     * @param key
-     * @param callback
-     * @returns {*}
      */
     once(key, callback) {
         return this._emitter.once(key, callback);
@@ -209,23 +129,36 @@ export default class AsyncStorageExtra {
 
     /**
      * 移除key/value的所有监听
-     * @param key
      */
     removeAllListeners(key) {
         return this._emitter.removeAllListeners(key);
     }
 
     /**
-     * storage的快捷设置
-     * @param keys
-     * @param mapStateToProps
-     * @returns {{scope: Storage, keys: *, mapStateToProps: *}}
+     * connect storage
      */
-    connect(keys, mapStateToProps) {
+    connect(keys, mapStateToProps): ConnectItemType {
         return {
             scope: this,
             keys,
             mapStateToProps
         };
+    }
+
+    /**
+     * 将AsyncStorage中的数据恢复到内存中
+     */
+    async restore() {
+        const allKeys = await this._asyncStorage.getAllKeys();
+        const keyValuePairs = await this._asyncStorage.multiGet(allKeys);
+        this._storage.multiSet(keyValuePairs);
+        this._option.onPreload && this._option.onPreload(this);
+    }
+
+    /**
+     * 释放掉内存中的数据
+     */
+    release() {
+        this._storage.clear();
     }
 }

@@ -22,22 +22,30 @@
   },
   "homepage": "https://github.com/react-native-pure/async-storage-extra#readme",
   "dependencies": {
-    "fbemitter": "^2.1.1"
+    "fast-deep-equal": "^2.0.1",
+    "fbemitter": "^2.1.1",
+    "hoist-non-react-statics": "^3.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
     "@babel/preset-flow": "^7.0.0",
+    "@babel/preset-react": "^7.0.0",
     "babel-jest": "^24.5.0",
     "commitizen": "^3.0.7",
     "coveralls": "^3.0.3",
     "cz-conventional-changelog": "^2.1.0",
     "jest": "^24.5.0",
-    "react-native": "^0.59.1",
+    "jest-haste-map": "^24.5.0",
+    "react": "16.8.3",
+    "react-native": "0.59.1",
+    "react-test-renderer": "^16.8.4",
     "semantic-release": "^15.13.3"
   },
   "peerDependencies": {
-    "react-native": ">=0.50"
+    "react-native": ">=0.50",
+    "react": "*"
   },
   "config": {
     "commitizen": {
