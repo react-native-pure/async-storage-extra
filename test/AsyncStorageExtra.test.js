@@ -4,7 +4,7 @@ import AsyncStorageExtra from "../index"
 
 describe(`test Storage`, () => {
     const storage = new AsyncStorageExtra();
-    test(`restore/release`, (callback) => {
+    test(`Auto restore when create storage from AsyncStorage`, (callback) => {
         new AsyncStorageExtra({
             onPreload: (self) => {
                 const oldNumber = self.getItem("old_number");
@@ -13,18 +13,30 @@ describe(`test Storage`, () => {
                 expect(oldNumber).toBe(1);
                 expect(oldString).toBe("hello");
                 expect(oldDate.getFullYear()).toBe(2010);
-                self.release();
-                const allKeys = self.getAllKeys();
-                expect(allKeys.length).toBe(0);
                 callback();
             }
         });
     });
+    test("release", async () => {
+        const createStore = () => new Promise((resolve) => {
+            new AsyncStorageExtra({
+                onPreload: (self) => {
+                    resolve(self);
+                }
+            })
+        });
+        const s = await createStore();
+        s.release();
+        const keys = s.getAllKeys();
+        expect(keys.length).toBe(0);
+    });
     test(`setItem/getItem a number`, async () => {
         const key = "test_number";
         const value = 123
-        await storage.setItem(key, value);
-        const result = await storage.getItem(key);
+        storage.setItem(key, value);
+        const result = storage.getItem(key);
+        const resultFromAsyncStorage = await storage._asyncStorage.getItem(storage._getRealKey(key));
+        expect(resultFromAsyncStorage).toBe(value);
         expect(result).toBe(value);
         expect(typeof result).toBe("number")
     });
@@ -84,7 +96,7 @@ describe(`test Storage`, () => {
         expect(typeof result).toBe("object");
         expect(result.name).toBe(value.name);
     });
-    test(`removeItem`, () => {
+    test(`removeItem`, async () => {
         const key = "abc";
         const value = 123;
         storage.setItem(key, value);
@@ -93,8 +105,10 @@ describe(`test Storage`, () => {
         storage.removeItem(key);
         const nextGetValue = storage.getItem(key);
         expect(nextGetValue).toBeUndefined();
+        const valueFromAsyncStorage = await storage._asyncStorage.getItem(storage._getRealKey(key));
+        expect(valueFromAsyncStorage).toBeNull();
     });
-    test(`clear`, () => {
+    test(`clear`, async () => {
         const key = "abc";
         const value = 123;
         storage.setItem(key, value);
@@ -103,6 +117,8 @@ describe(`test Storage`, () => {
         storage.clear();
         const allKeys = storage.getAllKeys();
         expect(allKeys.length).toBe(0);
+        const keysFromAsyncStorage = await storage._asyncStorage.getAllKeys();
+        expect(keysFromAsyncStorage.length).toBe(0);
     });
     test(`getKeys`, () => {
         const key = "abc";
@@ -189,7 +205,7 @@ describe(`test Storage`, () => {
         ]);
         expect(callback.mock.calls.length).toBe(3);
     });
-    test("multiRemove", () => {
+    test("multiRemove", async () => {
         storage.setItem("a", "a");
         storage.setItem("b", "b");
         storage.multiRemove(["a", "b"]);
@@ -197,7 +213,9 @@ describe(`test Storage`, () => {
         expect(result.length).toBe(2);
         result.forEach(([key, value]) => {
             expect(!!value).toBe(false);
-        })
+        });
+        const valueFromAsyncStorage = await storage._asyncStorage.getItem(storage._getRealKey("a"));
+        expect(valueFromAsyncStorage).toBeNull();
     });
 
     test(`Trigger item change when multiRemove`, () => {
