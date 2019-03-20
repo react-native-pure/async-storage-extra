@@ -134,7 +134,7 @@ describe(`test Storage`, () => {
         expect(keyValuePairs[0][0]).toBe("key1");
         expect(keyValuePairs[0][1]).toBe(1);
     });
-    test(`trigger listener`, () => {
+    test(`Listen item change`, () => {
         const key = "trigger-listener";
         const callback = jest.fn();
         storage.addListener(key, callback);
@@ -152,7 +152,7 @@ describe(`test Storage`, () => {
         expect(callback.mock.calls.length).toBe(2);
     });
 
-    test(`trigger listener once`, () => {
+    test(`Listen item change once`, () => {
         const key = "trigger-listener-once";
         const callback = jest.fn();
         storage.once(key, callback);
@@ -166,7 +166,7 @@ describe(`test Storage`, () => {
         expect(callback.mock.calls.length).toBe(1);
     });
 
-    test(`Don't trigger listener when set the same value`, () => {
+    test(`Don't trigger item change when set the same value`, () => {
         const callback = jest.fn();
         const key = "do-not-trigger";
         storage.addListener(key, callback);
@@ -189,4 +189,5 @@ describe(`test Storage`, () => {
         ]);
         expect(callback.mock.calls.length).toBe(3);
     });
+    //TODO test multiRemove
 })
