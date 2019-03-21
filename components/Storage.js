@@ -4,7 +4,10 @@ export default class Storage implements IStorage {
     _values = {};
 
     getItem(key) {
-        return this._values[key];
+        if (this._values.hasOwnProperty(key)) {
+            return this._values[key];
+        }
+        return null;
     }
 
     setItem(key, value, option) {
