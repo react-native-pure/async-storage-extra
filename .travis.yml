@@ -7,6 +7,6 @@ branches:
 deploy:
   provider: script
   script: npm run publish
-  skip-cleanup: true
+  skip_cleanup: true
   on:
     branch: master
