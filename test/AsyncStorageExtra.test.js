@@ -59,7 +59,7 @@ describe(`test Storage`, () => {
     test(`getItem is null from a invalid key`, async () => {
         const key = Math.random().toString();
         const value = await storage.getItem(key);
-        expect(value ? true : false).toBe(false);
+        expect(value).toBeNull();
     });
     test(`setItem/getItem a date`, async () => {
         const key = "test_date";
@@ -104,7 +104,7 @@ describe(`test Storage`, () => {
         expect(getValue).toBe(value);
         storage.removeItem(key);
         const nextGetValue = storage.getItem(key);
-        expect(nextGetValue).toBeUndefined();
+        expect(nextGetValue).toBeNull();
         const valueFromAsyncStorage = await storage._asyncStorage.getItem(storage._getRealKey(key));
         expect(valueFromAsyncStorage).toBeNull();
     });
