@@ -5,4 +5,7 @@ jest.config.js
 package-lock.json
 coverage
 .releaserc
-__test__
+__tests__
+.coveralls.yml
+.travis.yml
+test
