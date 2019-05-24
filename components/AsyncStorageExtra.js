@@ -21,8 +21,7 @@ export default class AsyncStorageExtra implements IStorage {
     constructor(option: StorageOption = DefaultStorageOption) {
         if (typeof option === "string") {
             this._option = Object.assign({}, DefaultStorageOption, {prefix: option});
-        }
-        else {
+        } else {
             this._option = Object.assign({}, DefaultStorageOption, option);
         }
         if (this._option.preload) {
@@ -151,7 +150,8 @@ export default class AsyncStorageExtra implements IStorage {
      */
     async restore() {
         const allKeys = await this._asyncStorage.getAllKeys();
-        const keyValuePairs = await this._asyncStorage.multiGet(allKeys);
+        const keys = allKeys.filter(f => new RegExp(`^${this._option.prefix}`).test(f));
+        const keyValuePairs = await this._asyncStorage.multiGet(keys);
         this._storage.multiSet(keyValuePairs);
         this._option.onPreload && this._option.onPreload(this);
     }
