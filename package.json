@@ -32,6 +32,7 @@
     "@babel/preset-env": "^7.3.4",
     "@babel/preset-flow": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
+    "@react-native-community/async-storage": "^1.4.1",
     "babel-jest": "^24.5.0",
     "commitizen": "^3.0.7",
     "coveralls": "^3.0.3",
@@ -45,7 +46,8 @@
   },
   "peerDependencies": {
     "react-native": ">=0.50",
-    "react": "*"
+    "react": "*",
+    "@react-native-community/async-storage": ">=1"
   },
   "config": {
     "commitizen": {

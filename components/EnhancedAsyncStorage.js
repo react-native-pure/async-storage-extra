@@ -1,5 +1,5 @@
-import {AsyncStorage} from "react-native"
 import type {IStorage, ValueItemType} from "./Types";
+import AsyncStorage from "@react-native-community/async-storage"
 
 export default class EnhancedAsyncStorage implements IStorage {
 
