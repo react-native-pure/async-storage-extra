@@ -2,7 +2,7 @@ jest.mock("@react-native-community/async-storage", () => {
     let _value = {
         "@storageold_number": JSON.stringify({type: "number", value: JSON.stringify(1)}),
         "userold_number": JSON.stringify({type: "number", value: JSON.stringify(1)}),
-        "@storageold_string": JSON.stringify({type: "string", value: "hello"}),
+        "@storageold_string": JSON.stringify({type: "string", value: JSON.stringify("hello")}),
         "@storageold_date": JSON.stringify({type: "date", value: JSON.stringify(new Date("2010-01-01 00:00:00"))}),
     };
     return {

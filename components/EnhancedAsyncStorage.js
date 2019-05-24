@@ -18,7 +18,8 @@ export default class EnhancedAsyncStorage implements IStorage {
                 case "number":
                     return parseFloat(item.value);// new Number(item.value);
                 case "string":
-                    return item.value;
+                    console.log(`string value : ${item.value}`);
+                    return JSON.parse(item.value);
                 default:
                     return JSON.parse(item.value);
             }
